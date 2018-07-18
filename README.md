@@ -3,7 +3,7 @@ write and parse complex config files
 this sctipt attempts to parse jerm-config files.
 the general format and rules are as follows:
 
-1) supported types are *bool*,*int*,*float* and *string*
+1) supported types are **bool**,**int**,**float** and **string**
         bool is denoted by   :b
         int is denoted by    :i
         float is denoted by  :f
@@ -25,8 +25,8 @@ the general format and rules are as follows:
               
 3) magic words can be used to set global variables. these begin and end with __(like __name__)
         supported magic words are;
-            __nonstrictindent__
-            __quiet__
+            `__nonstrictindent__`
+            `__quiet__`
 
         NB:
             - provide these special indicators before the actual config starts as they will be
