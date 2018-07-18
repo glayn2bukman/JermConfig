@@ -26,8 +26,8 @@ the general format and rules are as follows:
               
 3) magic words can be used to set global variables. these begin and end with __(like __name__)
         supported magic words are;
-            * `__nonstrictindent__`
-            * `__quiet__`
+    1. `__nonstrictindent__`
+    2. `__quiet__`
 
         NB:
             - provide these special indicators before the actual config starts as they will be
