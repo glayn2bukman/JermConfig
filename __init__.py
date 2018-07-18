@@ -1,1 +1,1 @@
-from jcparser import JCParser
+from jcparser import JCParser, test

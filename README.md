@@ -1,5 +1,6 @@
 # JermConfig
 this sctipt attempts to parse jerm-config files
+
 the script should work fine for both Python2 and Python3. if not, fix the arising issues :)
 
 the general format and rules are as follows:
@@ -179,7 +180,7 @@ data
 
 ## Show me the code...
 ### run test(test config files are in test/)
-```
+```python
 from JermConfig import test
 test()
 ```
@@ -188,7 +189,7 @@ test()
 ```python
 from JermConfig import JCParser
 parser = JCParser("PATH/TO/MY/CONFIG")
-print parser.parsed_data
+print(parser.parsed_data)
 ```
 
 ### create parser object then parse config file later
@@ -196,7 +197,7 @@ print parser.parsed_data
 from JermConfig import JCParser
 parser = JCParser()
 parser.parse("PATH/TO/MY/CONFIG")
-print parser.parsed_data
+print(parser.parsed_data)
 ```
 
 for more info or questions, please send me an email at **glayn2bukman@gmail.com**

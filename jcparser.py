@@ -169,9 +169,7 @@ data
         ],
         
         'innerdict':{'name':'inner dict'}
-    }, 
-
-    'metadata':{}
+    }
 }
 ##########################################################
 
@@ -504,9 +502,7 @@ class JCParser:
         
         return count
     
-        
-if __name__ == "__main__":
-
+def test():
     path = os.path.realpath(__file__)
     path = os.path.split(path)[0]
     
@@ -517,3 +513,6 @@ if __name__ == "__main__":
         print("\nparsing {}...".format(os.path.join(path,"test",test_config)))
         parser.parse(os.path.join(path,"test",test_config))
         print ("output:\n{}".format(parser.parsed_data))
+        
+if __name__ == "__main__":
+    test()
