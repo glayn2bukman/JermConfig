@@ -1,6 +1,7 @@
 # JermConfig
-write and parse complex config files
-this sctipt attempts to parse jerm-config files.
+this sctipt attempts to parse jerm-config files
+the script should work fine for both Python2 and Python3. if not, fix the arising issues :)
+
 the general format and rules are as follows:
 
 ## RULES
@@ -29,9 +30,9 @@ the general format and rules are as follows:
     1. `__nonstrictindent__`
     2. `__quiet__`
 
-        NB:
-            - provide these special indicators before the actual config starts as they will be
-              considered when they are found!
+    NB:
+        - provide these special indicators before the actual config starts as they will be
+          considered when they are found!
 
 4) the type/container comes after the variable eg;
         age:i    declares age as an int
@@ -175,3 +176,27 @@ data
     }
 }
 ```
+
+## Show me the code...
+### run test(test config files are in test/)
+```
+from JermConfig import test
+test()
+```
+
+### pass config file to __init__
+```python
+from JermConfig import JCParser
+parser = JCParser("PATH/TO/MY/CONFIG")
+print parser.parsed_data
+```
+
+### create parser object then parse config file later
+```python
+from JermConfig import JCParser
+parser = JCParser()
+parser.parse("PATH/TO/MY/CONFIG")
+print parser.parsed_data
+```
+
+for more info or questions, please send me an email at **glayn2bukman@gmail.com**
