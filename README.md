@@ -30,6 +30,7 @@ the general format and rules are as follows:
         supported magic words are;
     1. `__nonstrictindent__`
     2. `__quiet__`
+    3. `__nonstrictsyntax__`
 
     NB:
         - provide these special indicators before the actual config starts as they will be

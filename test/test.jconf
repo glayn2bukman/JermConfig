@@ -61,8 +61,7 @@ test-key{}
     test-list-subkey-with-only-floats[f]
         1.25
         18.96
-        0.13
-        
+        0.13        
 
     test-subdict
         test-sub-subdict
@@ -82,8 +81,8 @@ rtus
         name = Test RTU
         
         coords
-            lat:f = 0.3467
-            lon:f = 32.5825
+            lat:f = 01.3467
+            lon:f = 12.5825
         
         target-analog-pins:[]
             2:i
@@ -92,24 +91,24 @@ rtus
         0
             name = reference-AI-pin
             coords
-                lat:f = 0.3476
-                lon:f = 0.3476
+                lat:f = 15.3476
+                lon:f = 11.3476
 
         2
             name = test-cabinet-1
             coords
-                lat:f = 0.3476
-                lon:f = 32.5825
+                lat:f = 10.3476
+                lon:f = 12.5825
 
         3
             name = test-cabinet-2
             coords
-                lat:f = 0.307543
-                lon:f = 32.560223
+                lat:f = 10.307543
+                lon:f = 12.560223
 
 emails[]
-    mwengeza@gmail.com
-    glayn2bukman@gmail.com
+    dummy1@gmail.com
+    dummy2@gmail.com
 
 phone-numbers[]
 

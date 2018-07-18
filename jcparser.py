@@ -31,6 +31,7 @@ the general format and rules are as follows:
         supported magic words are;
             __nonstrictindent__
             __quiet__
+            __nonstrictsyntax__
 
         NB:
             - provide these special indicators before the actual config starts as they will be
@@ -175,7 +176,7 @@ data
 
 """
 
-import os
+import os, sys
 
 HELP = """# this is a comment
 # this config file uses indentation(spaces NOT tabs) to determine levels
@@ -245,6 +246,8 @@ class JCParser:
 
         line_count = 0
         index = 0
+        
+        indent_unit = 0
 
         for line in data:
             line_count += 1
@@ -254,6 +257,19 @@ class JCParser:
             line = line.rstrip()
 
             indent = _._indent_level(line)
+            
+            if indent and not indent_unit:
+                # first indented line sets indent unit to be used in the rest of the config
+                indent_unit = indent
+
+            if _.__strictindent__ and indent_unit and indent%indent_unit:
+                if _.__verbose__:
+                    _.log("indentation error(line {})".format(line_count))
+                if _.__strictsyntax__:
+                    _.parsed_data = {}
+                    return
+                else: continue
+                
 
             # check for indentation error...
             #_indents = indents.keys(); _indents.sort()
@@ -273,7 +289,7 @@ class JCParser:
             if "=" in line:
                 if isinstance(parent, list):
                     if _.__verbose__:
-                        _.log("syntax error, key-value pair in list(line {})".format(line_count))
+                        _.log("value error, key-value pair in list(line {})".format(line_count))
                     if _.__strictsyntax__:
                         _.parsed_data = {}
                         return
@@ -294,7 +310,7 @@ class JCParser:
                 if ":" in key:
                     if len(key)<3 or key[-2]!=":":
                         if _.__verbose__:
-                            _.log("syntax error(line {}); key is malformed! expected it to be in format key:TYPE eg age:i or pi:f".format(line_count))
+                            _.log("key error(line {}); key is malformed! expected it to be in format key:TYPE eg age:i or pi:f".format(line_count))
                         if _.__strictsyntax__:
                             _.parsed_data = {}
                             return
@@ -314,7 +330,7 @@ class JCParser:
                         value = JCParser.types[t](value)
                     except:
                         if _.__verbose__:
-                            _.log("value error(line {}); key idefined value as of type <{}> but value can't be parsed to this type".format(line_count, t))
+                            _.log("type error(line {}); key idefined value as of type <{}> but value can't be parsed to this type".format(line_count, t))
                         if _.__strictsyntax__:
                             _.parsed_data = {}
                             return
@@ -338,10 +354,13 @@ class JCParser:
                     if isinstance(parent, list):
                         parent.append({})
                         obj = parent[-1]
+                        
+                        if line:
+                            _.log("warning (line {}); dict name <{}> will be abandoned since parent is a list".format(line_count, line))
                     else:
                         if not line:
                             if _.__verbose__:
-                                _.log("syntax error(line {}); dict container must have a name if embeded in another dict container".format(line_count))
+                                _.log("name error(line {}); this dict must have a name as its a direct child of another dict".format(line_count))
                             if _.__strictsyntax__:
                                 _.parsed_data = {}
                                 return
@@ -371,7 +390,7 @@ class JCParser:
                     t = t if t else "s"
                     if t not in JCParser.basic_types:
                         if _.__verbose__:
-                            _.log("syntax error(line {}); list container sets default unknown type <{}>. supported types are {}".format(line_count, t, JCParser.basic_types))
+                            _.log("type error(line {}); list container sets default unknown type <{}>. supported types are {}".format(line_count, t, JCParser.basic_types))
                         if _.__strictsyntax__:
                             _.parsed_data = {}
                             return
@@ -392,10 +411,13 @@ class JCParser:
                     if isinstance(parent, list):
                         parent.append([])
                         obj = parent[-1]
+                        
+                        if line:
+                            _.log("warning (line {}); list name <{}> will be abandoned since parent is a list".format(line_count, line))
                     else:
                         if not line:
                             if _.__verbose__:
-                                _.log("syntax error(line {}); list container must have a name if embeded in a dict container".format(line_count))
+                                _.log("name error(line {}); this list must have a name as its a direct child of another dict".format(line_count))
                             if _.__strictsyntax__:
                                 _.parsed_data = {}
                                 return
@@ -438,7 +460,7 @@ class JCParser:
                             line = JCParser.types[t](line)
                         except:
                             if _.__verbose__:
-                                _.log("value error(line {}); section declared with type <{}> but can't be parsed to this type".format(line_count, t))
+                                _.log("type error(line {}); section declared with type <{}> but can't be parsed to this type".format(line_count, t))
                             if _.__strictsyntax__:
                                 _.parsed_data = {}
                                 return
@@ -452,7 +474,7 @@ class JCParser:
                             line = JCParser.types[default_type](line)
                         except:
                             if _.__verbose__:
-                                _.log("value error(line {}); failed to parse this to list type <{}>".format(line_count, t))
+                                _.log("value error(line {}); failed to parse <{}> to list default type <{}>".format(line_count, line, t))
                             if _.__strictsyntax__:
                                 _.parsed_data = {}
                                 return
@@ -469,7 +491,16 @@ class JCParser:
         "attempt to dump dictionary data to a jerm-config-file"
 
     def log(_,msg):
-        print ("[JERM-PARSER] {}".format(msg))
+        if "error" in msg and not _.__strictsyntax__:
+            msg += "(line treated as comment since __nonstrictsyntax__ was set)"
+
+        if "win" in sys.platform.lower():
+            print ("[JERM-PARSER] {}".format(msg))
+        else:
+            if "error" in msg:
+                print ("\033[1;31m[JERM-PARSER]\033[0m {}".format(msg))
+            else:
+                print ("\033[1;33m[JERM-PARSER]\033[0m {}".format(msg))
 
     def template(_, fpath):
         try:

@@ -1,0 +1,28 @@
+# am using two spaces for indentation here
+
+__nonstrictsyntax__
+
+lang
+  python
+    keywords[]
+      if
+      
+       # this item is not well indented but since __nonstrictsyntax__ as set, it will be treated
+       # like a comment
+       else
+      
+      is
+      and
+
+    # for my bool, am using yes/no instead of true/false
+    compiled:b = no
+
+  # C:i raises an error but error wont be fatal as __nonstrictsyntax__ wa set
+  # hence line will be treated as a comment thus overwriting 'keywords' already set above!
+  C:i
+    keywords[]
+      enum
+      typedef
+      return
+    
+    compiled:b = yes
