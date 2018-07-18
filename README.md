@@ -3,7 +3,7 @@ write and parse complex config files
 this sctipt attempts to parse jerm-config files.
 the general format and rules are as follows:
 
-1) supported types are bool,int,float and string
+1) supported types are *bool*,*int*,*float* and *string*
         bool is denoted by   :b
         int is denoted by    :i
         float is denoted by  :f
