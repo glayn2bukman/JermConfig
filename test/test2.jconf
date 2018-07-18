@@ -1,0 +1,35 @@
+rtus
+    mengo
+        full-name = Mengo Exchange
+        coords
+            lat:f = 0.307543
+            lon:f = 32.560223
+        target-analog-pins[]
+            1
+            2
+        0{}
+            name = reference-AI-pin 
+            coords
+                lat:f = 0.307543 
+                lon:f = 32.560223
+        1
+            name = Ndeeba Cab1
+            coords
+                lat:f = 0.31349
+                lon:f = 32.55531
+        2
+            name = Cab1 (Ku Nfuddu)
+            coords{}
+                lat:f = 0.3086
+                lon:f = 32.55962
+emails[]
+    mwengeza@gmail.com
+    glayn2bukman@gmail.com
+
+phone-numbers[]
+
+innactive-timeout = 2
+
+default-coords
+    lat = 0.3476
+    lon = 32.5825

@@ -1,0 +1,127 @@
+# this is a comment
+# this config file uses indentation(spaces NOT tabs) to determine levels
+# it supports containers (dictionaries and lists), integers, floats, bool and strings(default type)
+# the config also supports special/magic indicators that start and end with two `_`s (eg __mm__)
+# 
+# NB: to assign environment variables as values, use $ eg 
+#     user = $USER
+
+
+# SPECIAL/MAGIC INDICATORS...
+# dont be strict with syntax(not advisable), if not provided, syntax is strict ie anything that
+# would raise an error in python also raises an error here
+#__nonstrictsyntax__
+
+# operate in verbose mode? provide this if you are in production mode...
+#__quiet__
+
+
+test-key{}
+    inner-key
+        inner-value = INNER VALUE
+        
+    test-string-subkey = value1
+    test-int-subkey:i = 12
+        
+    test--i :i = 20
+
+    test-float-subkey:f  = 0.123
+    
+    # for the bool below, you can use any case eg no, No, False,FALSE, false, TRue, yes, yES etc
+    test-bool-subkey:b = no
+    
+    test-list-subkey[]
+        # int
+        0:i
+        
+        # string
+        item
+        
+        # float
+        3.14:f
+
+        # add list to the list, THIS LIST WONT HAVE A NAME as its inside a list!
+        test-sub-sub-list[]
+            hello
+            world
+        
+        9.06
+        
+        # add a dictionary to the list. THIS DICTIONARY WONT HAVE A NAME as its inside a list!
+        e{}
+            name = dict in list
+            data[]
+                hello
+                there
+        
+        []
+            hello
+            darkness
+
+    test-list-subkey-with-only-floats[f]
+        1.25
+        18.96
+        0.13
+        
+
+    test-subdict
+        test-sub-subdict
+
+    int-sub-major-key
+        val = value
+        
+        # val2 is of type `i` and it value is of type `f`
+        i:10:f = 0.2
+    
+    empty-dict
+    empty-list[]    
+
+rtus
+    # this too is a comment!
+    test-rtu
+        name = Test RTU
+        
+        coords
+            lat:f = 0.3467
+            lon:f = 32.5825
+        
+        target-analog-pins:[]
+            2:i
+            3:i
+        
+        0
+            name = reference-AI-pin
+            coords
+                lat:f = 0.3476
+                lon:f = 0.3476
+
+        2
+            name = test-cabinet-1
+            coords
+                lat:f = 0.3476
+                lon:f = 32.5825
+
+        3
+            name = test-cabinet-2
+            coords
+                lat:f = 0.307543
+                lon:f = 32.560223
+
+emails[]
+    mwengeza@gmail.com
+    glayn2bukman@gmail.com
+
+phone-numbers[]
+
+innactive-timeout:i = 2
+    
+default-coords
+    lat:f = 0.3476
+    lon:f = 32.5825
+
+l{}
+    hi
+
+env
+    user = $USER
+    shell = $SHELL
