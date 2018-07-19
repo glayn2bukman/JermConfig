@@ -201,4 +201,47 @@ parser.parse("PATH/TO/MY/CONFIG")
 print(parser.parsed_data)
 ```
 
+### write and then parse config file
+```python
+    parser = JCParser()
+    data = {
+        2: 'hello', # should be dumped as key is not a string
+
+        'N.O.S': 2,
+        'login-handler': lambda x:x, # should not be dumped as functions aint supported
+        
+        'graduates': True,
+        
+        'students':{            
+            'bukman':{
+                'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
+                'average': 79.75,
+                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                'credentials':{
+                    'username': 'bukman?',
+                    'passcode': '1603'
+                }
+            },
+
+            'glayn':{
+                'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
+                'average': 63.25,
+                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                'credentials':{
+                    'username': 'glayn!!',
+                    'passcode': '0628'
+                }
+            }
+        },
+        
+        'tutors':['arthur','sofia','jimmy']
+    }
+    
+    print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
+    print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+    parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+    print(parser.parsed_data)
+```
+
 for more info or questions, please send me an email at **glayn2bukman@gmail.com**

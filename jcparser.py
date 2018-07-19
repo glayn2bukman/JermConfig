@@ -194,10 +194,21 @@ HELP = """# this is a comment
 
 # operate in verbose mode? provide this if you are in production mode...
 #__quiet__
-
 """
 
+TAB_SIZE = 4 # spaces
+
+def fdata(data):
+    if sys.version_info[0]==3:
+        return bytes(data, "utf-8")
+    else: 
+        return data
+
 class JCParser:
+    # types supported when writing config files
+    PyTypes = [type(0),type(0.0),type(()),type([]),type({}),type(""),type(False)]
+    
+    # types supported when parsing config files
     types = {
         "i":int,"f":float,"s":str,
         'b':(lambda b:(
@@ -262,6 +273,7 @@ class JCParser:
                 # first indented line sets indent unit to be used in the rest of the config
                 indent_unit = indent
 
+            # check for indentation error...
             if _.__strictindent__ and indent_unit and indent%indent_unit:
                 if _.__verbose__:
                     _.log("indentation error(line {})".format(line_count))
@@ -269,10 +281,7 @@ class JCParser:
                     _.parsed_data = {}
                     return
                 else: continue
-                
-
-            # check for indentation error...
-            #_indents = indents.keys(); _indents.sort()
+                                
             _indents = [k for k in indents]; _indents.sort()
             if indent<_indents[-1] and (indent not in _indents):
                 if _.__verbose__:
@@ -487,9 +496,26 @@ class JCParser:
                         obj = parent[line]
                         indents[indent] = obj
                             
-    def write(_, data, fout_path):
+    def write(_, data, fout_path, tabsize=TAB_SIZE, verbose=False):
         "attempt to dump dictionary data to a jerm-config-file"
+        
+        if not isinstance(data, dict):
+            _.log("warning, only dictionaries can be dumped to config files!")
+            return
+        
+        try:
+            fout = open(fout_path, "wb")
+        except:
+            _.log("could not create config file: <{}>".format(fout_path))
+            return
 
+        fout.write(fdata(HELP))
+        
+        if data:
+            _._write(data, fout, tabsize, 0, verbose)
+            
+        fout.close()
+        
     def log(_,msg):
         if "error" in msg and not _.__strictsyntax__:
             msg += "(line treated as comment since __nonstrictsyntax__ was set)"
@@ -504,9 +530,9 @@ class JCParser:
 
     def template(_, fpath):
         try:
-            with open(fpath, "wb") as fout: fout.write(HELP)
+            with open(fpath, "wb") as fout: fout.write(fdata(HELP))
         except:
-            _.log("could not open config file: <{}>".format(fpath))
+            _.log("could not create config file: <{}>".format(fpath))
             return
 
     def _update_indicator(_, line):
@@ -532,6 +558,104 @@ class JCParser:
             i += 1
         
         return count
+
+    def _write(_, data, fout, tabsize, indent, verbose):
+        for k in data:
+            if not isinstance(k, str):
+                _.log("warning, <{}> left out as its a key but NOT a string".format(k))
+                continue
+            
+            if type(data[k])not in JCParser.PyTypes:
+                _.log("warning, <{}> left out as its not of supported types".format(data[k]))
+                continue
+            
+            # basic types...
+            if isinstance(data[k], str):
+                line =  "{}{} = {}".format(" "*indent+""*tabsize, k, data[k])
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif str(data[k]) in ["True", "False"]:
+                # this comes before checking is data[k] is int as bools are ints!
+                line =  "{}{}:b = {}".format(" "*indent+""*tabsize, k, data[k])
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif isinstance(data[k], int):
+                line =  "{}{}:i = {}".format(" "*indent+""*tabsize, k, data[k])
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif isinstance(data[k], float):
+                line =  "{}{}:f = {}".format(" "*indent+""*tabsize, k, data[k])
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+                    
+            # dict type...
+            elif isinstance(data[k], dict):
+                line =  " "*indent + k
+                fout.write(fdata("\n\n"+line))
+                if verbose:
+                    print(line)
+                _._write(data[k],fout,tabsize, indent+tabsize, verbose)
+
+            # list/tuple type...
+            elif isinstance(data[k], list) or isinstance(data[k], tuple):
+                line =  "{}{}[]".format(" "*indent+""*tabsize, k)
+                fout.write(fdata("\n\n"+line))
+                if verbose:
+                    print(line)
+                _._write_list(data[k],fout,tabsize, indent+tabsize, verbose)
+
+    def _write_list(_, data, fout, tabsize, indent, verbose):
+        if type(data) not in [type([]), type(())]:
+            _.log("warning, _write_list ONLY writes lists/tuples. <{}> is not!".format(data))
+            return
+        
+        for entry in data:
+            if type(entry)not in JCParser.PyTypes:
+                _.log("warning, <{}> left out as its not of supported types".format(entry))
+                return
+
+            if isinstance(entry, str):
+                line =  "{}{}".format(" "*indent+""*tabsize, entry)
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif str(entry) in ["True", "False"]:
+                # this comes before checking is data[k] is int as bools are ints!
+                line =  "{}{}:b".format(" "*indent+""*tabsize, entry)
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif isinstance(entry, int):
+                line =  "{}{}:i".format(" "*indent+""*tabsize, entry)
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+            elif isinstance(entry, float):
+                line =  "{}{}:f".format(" "*indent+""*tabsize, entry)
+                fout.write(fdata("\n"+line))
+                if verbose:
+                    print(line)
+                    
+            # dict type...
+            elif isinstance(entry, dict):
+                line =  "{}{}".format(" "*indent+""*tabsize, "{}")
+                fout.write(fdata("\n\n"+line))
+                if verbose:
+                    print(line)
+                _._write(entry,fout,tabsize, indent+tabsize, verbose)
+
+            # list/tuple type...
+            elif isinstance(entry, list) or isinstance(entry, tuple):
+                line =  "{}[]".format(" "*indent+""*tabsize)
+                fout.write(fdata("\n\n"+line))
+                if verbose:
+                    print(line)
+                _._write_list(entry,fout,tabsize, indent+tabsize,verbose)
+
     
 def test():
     path = os.path.realpath(__file__)
@@ -547,3 +671,44 @@ def test():
         
 if __name__ == "__main__":
     test()
+    
+    # now dumping config file and then parsing it afterwards...
+    parser = JCParser()
+    data = {
+        2: 'hello', # should be dumped as key is not a string
+
+        'N.O.S': 2,
+        'login-handler': lambda x:x, # should not be dumped as functions aint supported
+        
+        'graduates': True,
+        
+        'students':{            
+            'bukman':{
+                'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
+                'average': 79.75,
+                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                'credentials':{
+                    'username': 'bukman?',
+                    'passcode': '1603'
+                }
+            },
+
+            'glayn':{
+                'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
+                'average': 63.25,
+                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                'credentials':{
+                    'username': 'glayn!!',
+                    'passcode': '0628'
+                }
+            }
+        },
+        
+        'tutors':['arthur','sofia','jimmy']
+    }
+    
+    print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
+    print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+    parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+    print(parser.parsed_data)
