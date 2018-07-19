@@ -616,7 +616,7 @@ class JCParser:
         for entry in data:
             if type(entry)not in JCParser.PyTypes:
                 _.log("warning, <{}> left out as its not of supported types".format(entry))
-                return
+                continue
 
             if isinstance(entry, str):
                 line =  "{}{}".format(" "*indent+""*tabsize, entry)
@@ -675,10 +675,10 @@ if __name__ == "__main__":
     # now dumping config file and then parsing it afterwards...
     parser = JCParser()
     data = {
-        2: 'hello', # should be dumped as key is not a string
+        2: 'hello', # should be skipped as key is not a string
 
         'N.O.S': 2,
-        'login-handler': lambda x:x, # should not be dumped as functions aint supported
+        'login-handler': lambda x:x, # should be skipped as functions aint supported
         
         'graduates': True,
         

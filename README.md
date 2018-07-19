@@ -205,10 +205,10 @@ print(parser.parsed_data)
 ```python
     parser = JCParser()
     data = {
-        2: 'hello', # should be dumped as key is not a string
+        2: 'hello', # should be skipped as key is not a string
 
         'N.O.S': 2,
-        'login-handler': lambda x:x, # should not be dumped as functions aint supported
+        'login-handler': lambda x:x, # should be skipped as functions aint supported
         
         'graduates': True,
         
