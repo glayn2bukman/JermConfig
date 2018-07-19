@@ -7,6 +7,7 @@ the general format and rules are as follows:
 
 ## RULES
 1) supported types are **bool**,**int**,**float** and **string**
+
         bool is denoted by   :b
         int is denoted by    :i
         float is denoted by  :f
