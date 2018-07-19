@@ -203,45 +203,47 @@ print(parser.parsed_data)
 
 ### write and then parse config file
 ```python
-    parser = JCParser()
-    data = {
-        2: 'hello', # should be skipped as key is not a string
+from JermConfig import JCParser
 
-        'N.O.S': 2,
-        'login-handler': lambda x:x, # should be skipped as functions aint supported
-        
-        'graduates': True,
-        
-        'students':{            
-            'bukman':{
-                'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
-                'average': 79.75,
-                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-                'credentials':{
-                    'username': 'bukman?',
-                    'passcode': '1603'
-                }
-            },
+parser = JCParser()
+data = {
+    2: 'hello', # should be skipped as key is not a string
 
-            'glayn':{
-                'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
-                'average': 63.25,
-                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-                'credentials':{
-                    'username': 'glayn!!',
-                    'passcode': '0628'
-                }
+    'N.O.S': 2,
+    'login-handler': lambda x:x, # should be skipped as functions aint supported
+    
+    'graduates': True,
+    
+    'students':{            
+        'bukman':{
+            'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
+            'average': 79.75,
+            'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+            'credentials':{
+                'username': 'bukman?',
+                'passcode': '1603'
             }
         },
-        
-        'tutors':['arthur','sofia','jimmy']
-    }
+
+        'glayn':{
+            'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
+            'average': 63.25,
+            'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+            'credentials':{
+                'username': 'glayn!!',
+                'passcode': '0628'
+            }
+        }
+    },
     
-    print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
-    print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-    parser.parse("/tmp/JermConfig.dummy-conf.jconf")
-    print(parser.parsed_data)
+    'tutors':['arthur','sofia','jimmy']
+}
+
+print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
+print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+print(parser.parsed_data)
 ```
 
 for more info or questions, please send me an email at **glayn2bukman@gmail.com**
