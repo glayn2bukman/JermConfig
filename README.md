@@ -251,13 +251,13 @@ print(parser.parsed_data)
 1. Download this repo
 2. Extract the repo(JermConfig) from the zip file
 3. Copy and paste the library to your Python's import directories;
-    * Python2
-        - ~/.local/lib/python2*
-        - /usr/local/lib/python2*/dist-packages
-    * Python3
-        - ~/.local/lib/python3*
-        - /usr/local/lib/python3*/dist-packages
-        
+        * Python2
+            - ~/.local/lib/python2*
+            - /usr/local/lib/python2*/dist-packages
+        * Python3
+            - ~/.local/lib/python3*
+            - /usr/local/lib/python3*/dist-packages
+            
         NB:
             * Windows and Mac users should install the library in their respective locations
             * Linux users who dont want the hastle of manual installations should use the deb
