@@ -258,9 +258,9 @@ print(parser.parsed_data)
             - ~/.local/lib/python3*
             - /usr/local/lib/python3*/dist-packages
             
-        NB:
-            * Windows and Mac users should install the library in their respective locations
-            * Linux users who dont want the hastle of manual installations should use the deb
-              package [here](https://github.com/glayn2bukman/JermConfig/releases/download/0.0.1/JermConfig-0.0.1-1.deb) or check the *releases* for this repo
+    NB:
+        * Windows and Mac users should install the library in their respective locations
+        * Linux users who dont want the hastle of manual installations should use the deb
+          package [here](https://github.com/glayn2bukman/JermConfig/releases/download/0.0.1/JermConfig-0.0.1-1.deb) or check the *releases* for this repo
 
 for more info or questions, please send me an email at **glayn2bukman@gmail.com**
