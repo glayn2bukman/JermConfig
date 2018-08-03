@@ -176,6 +176,7 @@ data
 
 """
 
+__ALL__ = ["JCParser", "test"]
 import os, sys
 
 HELP = """# this is a comment
@@ -596,6 +597,8 @@ class JCParser:
             elif isinstance(data[k], dict):
                 line =  " "*indent + k
                 fout.write(fdata("\n\n"+line))
+                line =  "{}{}".format(" "*indent+" "*tabsize, "# dict data is indented here...")
+                fout.write(fdata("\n"+line))
                 if verbose:
                     print(line)
                 _._write(data[k],fout,tabsize, indent+tabsize, verbose)
@@ -612,6 +615,9 @@ class JCParser:
         if type(data) not in [type([]), type(())]:
             _.log("warning, _write_list ONLY writes lists/tuples. <{}> is not!".format(data))
             return
+
+        line =  "{}{}".format(" "*indent+""*tabsize, "# list data is indented here...")
+        fout.write(fdata("\n"+line))
         
         for entry in data:
             if type(entry)not in JCParser.PyTypes:
@@ -644,6 +650,8 @@ class JCParser:
             elif isinstance(entry, dict):
                 line =  "{}{}".format(" "*indent+""*tabsize, "{}")
                 fout.write(fdata("\n\n"+line))
+                line =  "{}{}".format(" "*indent+" "*tabsize, "# dict data is indented here...")
+                fout.write(fdata("\n"+line))
                 if verbose:
                     print(line)
                 _._write(entry,fout,tabsize, indent+tabsize, verbose)
@@ -652,6 +660,8 @@ class JCParser:
             elif isinstance(entry, list) or isinstance(entry, tuple):
                 line =  "{}[]".format(" "*indent+""*tabsize)
                 fout.write(fdata("\n\n"+line))
+                line =  "{}{}".format(" "*indent+" "*tabsize, "# list data is indented here...")
+                fout.write(fdata("\n"+line))
                 if verbose:
                     print(line)
                 _._write_list(entry,fout,tabsize, indent+tabsize,verbose)
