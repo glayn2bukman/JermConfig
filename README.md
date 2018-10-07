@@ -191,13 +191,22 @@ test()
 ```python
 from JermConfig import JCParser
 parser = JCParser("PATH/TO/MY/CONFIG")
-print(parser.parsed_data)
+
+if parser.warnings:
+    # check for warnings
+    print parser.warnings
+
+if parser.status:
+    # always check if nothing went wrong
+    print(parser.parsed_data)
+else:
+    print parser.errors
 ```
 
-### create parser object then parse config file later
+### create parser object then parse config file later with _verbose_ set to true 
 ```python
 from JermConfig import JCParser
-parser = JCParser()
+parser = JCParser(verbose=True)
 parser.parse("PATH/TO/MY/CONFIG")
 print(parser.parsed_data)
 ```
@@ -206,7 +215,7 @@ print(parser.parsed_data)
 ```python
 from JermConfig import JCParser
 
-parser = JCParser()
+parser = JCParser(verbose=True)
 data = {
     2: 'hello', # should be skipped as key is not a string
 
@@ -241,7 +250,7 @@ data = {
 }
 
 print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
+parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
 print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
 parser.parse("/tmp/JermConfig.dummy-conf.jconf")
 print(parser.parsed_data)

@@ -222,11 +222,28 @@ class JCParser:
     basic_types = sorted([k for k in types.keys() if len(k)==1])
     list_types = sorted([k for k in types.keys() if ("["in k)])
     
-    def __init__(_, fpath=""):
+    def __init__(_, fpath="", verbose=False):
+        # flag to show if parsing/writting was ok
+        _.status = False
+        
+        # read this if status=True, error is empty string
         _.parsed_data = {}
+        
+        # errors encountered when parsing
+        _.error = ""
+
+        # warnings, if any (these can be present even if status is True)
+        _.warnings = ""
+        
+        _.verbose = verbose
         
         if fpath:
             _.parse(fpath)
+
+    def _reset(_):
+        _.status = False
+        _.errors = ""
+        _.warnings = ""
 
     def parse(_, fpath):
         "attempt to parse a jerm-config-file"
@@ -234,12 +251,15 @@ class JCParser:
         # initialize default magic-indicators....
         _.__strictindent__ = True # strict-indent = True
         _.__strictsyntax__ = True # strict-syntax = True
-        _.__verbose__      = True # verbose = True, set to False if __quiet__ is found in config file
+        #_.__verbose__     = True # verbose = True, set to False if __quiet__ is found in config file
+        _.__verbose__      = _.verbose
 
         try:
             fin = open(fpath)
         except:
-            _.log("could not open config file: <{}>".format(fpath))
+            _.error = "could not open config file: <{}>".format(fpath)
+            if _.verbose:
+                _.log("could not open config file: <{}>".format(fpath))
             return
 
         data = fin.readlines(); fin.close()
@@ -247,10 +267,13 @@ class JCParser:
         fin.close()
 
         if not data:
-            _.log("config file is empty")
+            _.error = "config file is empty"
+            if _.verbose:
+                _.log("config file is empty")
             return 
         
         # reset old parsed data
+        _._reset()
         _.parsed_data = {}
 
         indents = {-1: _.parsed_data} # indent: object; parent object is the max of the lower indents!
@@ -276,6 +299,7 @@ class JCParser:
 
             # check for indentation error...
             if _.__strictindent__ and indent_unit and indent%indent_unit:
+                _.errors += "indentation error(line {})\n".format(line_count)
                 if _.__verbose__:
                     _.log("indentation error(line {})".format(line_count))
                 if _.__strictsyntax__:
@@ -285,6 +309,7 @@ class JCParser:
                                 
             _indents = [k for k in indents]; _indents.sort()
             if indent<_indents[-1] and (indent not in _indents):
+                _.errors += "indentation error(line {})\n".format(line_count)
                 if _.__verbose__:
                     _.log("indentation error(line {})".format(line_count))
                 if _.__strictsyntax__:
@@ -298,6 +323,7 @@ class JCParser:
 
             if "=" in line:
                 if isinstance(parent, list):
+                    _.errors += "value error, key-value pair in list(line {})\n".format(line_count)
                     if _.__verbose__:
                         _.log("value error, key-value pair in list(line {})".format(line_count))
                     if _.__strictsyntax__:
@@ -310,6 +336,7 @@ class JCParser:
                 value = os.getenv(value[1:]) if value.startswith("$") else value
 
                 if ("{" in key)or("}" in key)or("[" in key)or("]" in key):
+                    _.errors += "syntax error, key contains container characters(line {})\n".format(line_count)
                     if _.__verbose__:
                         _.log("syntax error, key contains container characters(line {})".format(line_count))
                     if _.__strictsyntax__:
@@ -319,6 +346,7 @@ class JCParser:
 
                 if ":" in key:
                     if len(key)<3 or key[-2]!=":":
+                        _.errors += "key error(line {}); key is malformed! expected it to be in format key:TYPE eg age:i or pi:f\n".format(line_count)
                         if _.__verbose__:
                             _.log("key error(line {}); key is malformed! expected it to be in format key:TYPE eg age:i or pi:f".format(line_count))
                         if _.__strictsyntax__:
@@ -329,6 +357,7 @@ class JCParser:
                     key,t = key[:-2].strip(), key[-1]
                     
                     if t not in JCParser.types:
+                        _.errors += "type error(line {}); key has unknown type <{}>. supported types are {}\n".format(line_count, t, JCParser.basic_types)
                         if _.__verbose__:
                             _.log("type error(line {}); key has unknown type <{}>. supported types are {}".format(line_count, t, JCParser.basic_types))
                         if _.__strictsyntax__:
@@ -339,6 +368,7 @@ class JCParser:
                     try:
                         value = JCParser.types[t](value)
                     except:
+                        _.errors += "type error(line {}); key idefined value as of type <{}> but value can't be parsed to this type\n".format(line_count, t)
                         if _.__verbose__:
                             _.log("type error(line {}); key idefined value as of type <{}> but value can't be parsed to this type".format(line_count, t))
                         if _.__strictsyntax__:
@@ -352,6 +382,7 @@ class JCParser:
                 obj = None
                 if ("{" in line)or("}" in line):
                     if (not line.endswith("{}"))or (line.count("{")!=1 or line.count("}")!=1):
+                        _.errors += "syntax error(line {}); dict containers are defined in format var{}\n".format(line_count,'{}')
                         if _.__verbose__:
                             _.log("syntax error(line {}); dict containers are defined in format var{}".format(line_count,'{}'))
                         if _.__strictsyntax__:
@@ -366,9 +397,12 @@ class JCParser:
                         obj = parent[-1]
                         
                         if line:
-                            _.log("warning (line {}); dict name <{}> will be abandoned since parent is a list".format(line_count, line))
+                            _.warnings += "warning (line {}); dict name <{}> will be abandoned since parent is a list\n".format(line_count, line)
+                            if _.__verbose__:
+                                _.log("warning (line {}); dict name <{}> will be abandoned since parent is a list".format(line_count, line))
                     else:
                         if not line:
+                            _.errors += "name error(line {}); this dict must have a name as its a direct child of another dict\n".format(line_count)
                             if _.__verbose__:
                                 _.log("name error(line {}); this dict must have a name as its a direct child of another dict".format(line_count))
                             if _.__strictsyntax__:
@@ -383,6 +417,7 @@ class JCParser:
                     
                 elif ("[" in line)or("]" in line):
                     if line.count("[")!=1 or line.count("]")!=1 or line.index('[')>line.index('['):
+                        _.errors += "syntax error(line {}); list containers are defined in format var[TYPE]\n".format(line_count)
                         if _.__verbose__:
                             _.log("syntax error(line {}); list containers are defined in format var[TYPE]".format(line_count))
                         if _.__strictsyntax__:
@@ -399,6 +434,7 @@ class JCParser:
                     t = line[line.index("[")+1:line.index("]")]
                     t = t if t else "s"
                     if t not in JCParser.basic_types:
+                        _.errors += "type error(line {}); list container sets default unknown type <{}>. supported types are {}\n".format(line_count, t, JCParser.basic_types)
                         if _.__verbose__:
                             _.log("type error(line {}); list container sets default unknown type <{}>. supported types are {}".format(line_count, t, JCParser.basic_types))
                         if _.__strictsyntax__:
@@ -407,6 +443,7 @@ class JCParser:
                         else: continue
                             
                     if not list_type_known:
+                        _.errors += "syntax error(line {}); list containers are defined in format var[TYPE]\n".format(line_count)
                         if _.__verbose__:
                             _.log("syntax error(line {}); list containers are defined in format var[TYPE]".format(line_count))
                         if _.__strictsyntax__:
@@ -423,9 +460,12 @@ class JCParser:
                         obj = parent[-1]
                         
                         if line:
-                            _.log("warning (line {}); list name <{}> will be abandoned since parent is a list".format(line_count, line))
+                            _.warnings += "warning (line {}); list name <{}> will be abandoned since parent is a list\n".format(line_count, line)
+                            if _.__verbose__:
+                                _.log("warning (line {}); list name <{}> will be abandoned since parent is a list".format(line_count, line))
                     else:
                         if not line:
+                            _.errors += "name error(line {}); this list must have a name as its a direct child of another dict\n".format(line_count)
                             if _.__verbose__:
                                 _.log("name error(line {}); this list must have a name as its a direct child of another dict".format(line_count))
                             if _.__strictsyntax__:
@@ -440,6 +480,7 @@ class JCParser:
                     
                 elif ":" in line:
                     if isinstance(parent, dict):
+                        _.errors += "syntax error(line {}); dict container cannot have a type\n".format(line_count)
                         if _.__verbose__:
                             _.log("syntax error(line {}); dict container cannot have a type".format(line_count))
                         if _.__strictsyntax__:
@@ -449,6 +490,7 @@ class JCParser:
                     else:
                         # this is a list item
                         if line.count(":")!=1 or len(line)<3 or line[-2]!=":":
+                            _.errors += "syntax error(line {}); section is malformed! expected it to be in format section:TYPE eg age:i or pi:f\n".format(line_count)
                             if _.__verbose__:
                                 _.log("syntax error(line {}); section is malformed! expected it to be in format section:TYPE eg age:i or pi:f".format(line_count))
                             if _.__strictsyntax__:
@@ -459,6 +501,7 @@ class JCParser:
                         line,t = line[:-2].strip(), line[-1]
                         
                         if t not in JCParser.basic_types:
+                            _.errors += "type error(line {}); section has unknown type <{}>. supported types are {}\n".format(line_count, t, JCParser.basic_types)
                             if _.__verbose__:
                                 _.log("type error(line {}); section has unknown type <{}>. supported types are {}".format(line_count, t, JCParser.basic_types))
                             if _.__strictsyntax__:
@@ -469,6 +512,7 @@ class JCParser:
                         try:
                             line = JCParser.types[t](line)
                         except:
+                            _.errors += "type error(line {}); section declared with type <{}> but can't be parsed to this type\n".format(line_count, t)
                             if _.__verbose__:
                                 _.log("type error(line {}); section declared with type <{}> but can't be parsed to this type".format(line_count, t))
                             if _.__strictsyntax__:
@@ -483,6 +527,7 @@ class JCParser:
                         try:
                             line = JCParser.types[default_type](line)
                         except:
+                            _.errors += "value error(line {}); failed to parse <{}> to list default type <{}>\n".format(line_count, line, t)
                             if _.__verbose__:
                                 _.log("value error(line {}); failed to parse <{}> to list default type <{}>".format(line_count, line, t))
                             if _.__strictsyntax__:
@@ -496,26 +541,36 @@ class JCParser:
                         parent[line] = {}
                         obj = parent[line]
                         indents[indent] = obj
+
+        _.status = True
                             
-    def write(_, data, fout_path, tabsize=TAB_SIZE, verbose=False):
+    def write(_, data, fout_path, tabsize=TAB_SIZE):
         "attempt to dump dictionary data to a jerm-config-file"
         
+        _._reset()
+        
         if not isinstance(data, dict):
-            _.log("warning, only dictionaries can be dumped to config files!")
+            _.warnings += "warning, only dictionaries can be dumped to config files!\n"
+            if _.verbose:
+                _.log("warning, only dictionaries can be dumped to config files!")
             return
         
         try:
             fout = open(fout_path, "wb")
         except:
-            _.log("could not create config file: <{}>".format(fout_path))
+            _.warnings += "could not create config file: <{}>\n".format(fout_path)
+            if _.verbose:
+                _.log("could not create config file: <{}>".format(fout_path))
             return
 
         fout.write(fdata(HELP))
         
         if data:
-            _._write(data, fout, tabsize, 0, verbose)
+            _._write(data, fout, tabsize, 0)
             
         fout.close()
+
+        _.status = True
         
     def log(_,msg):
         if "error" in msg and not _.__strictsyntax__:
@@ -560,37 +615,41 @@ class JCParser:
         
         return count
 
-    def _write(_, data, fout, tabsize, indent, verbose):
+    def _write(_, data, fout, tabsize, indent):
         for k in data:
             if not isinstance(k, str):
-                _.log("warning, <{}> left out as its a key but NOT a string".format(k))
+                _.warnings += "warning, <{}> left out as its a key but NOT a string\n".format(k)
+                if _.verbose:
+                    _.log("warning, <{}> left out as its a key but NOT a string".format(k))
                 continue
             
             if type(data[k])not in JCParser.PyTypes:
-                _.log("warning, <{}> left out as its not of supported types".format(data[k]))
+                _.warnings += "warning, <{}> left out as its not of supported types\n".format(data[k])
+                if _.verbose:
+                    _.log("warning, <{}> left out as its not of supported types".format(data[k]))
                 continue
             
             # basic types...
             if isinstance(data[k], str):
                 line =  "{}{} = {}".format(" "*indent+""*tabsize, k, data[k])
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif str(data[k]) in ["True", "False"]:
                 # this comes before checking is data[k] is int as bools are ints!
                 line =  "{}{}:b = {}".format(" "*indent+""*tabsize, k, data[k])
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif isinstance(data[k], int):
                 line =  "{}{}:i = {}".format(" "*indent+""*tabsize, k, data[k])
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif isinstance(data[k], float):
                 line =  "{}{}:f = {}".format(" "*indent+""*tabsize, k, data[k])
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
                     
             # dict type...
@@ -599,19 +658,19 @@ class JCParser:
                 fout.write(fdata("\n\n"+line))
                 line =  "{}{}".format(" "*indent+" "*tabsize, "# dict data is indented here...")
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
-                _._write(data[k],fout,tabsize, indent+tabsize, verbose)
+                _._write(data[k],fout,tabsize, indent+tabsize)
 
             # list/tuple type...
             elif isinstance(data[k], list) or isinstance(data[k], tuple):
                 line =  "{}{}[]".format(" "*indent+""*tabsize, k)
                 fout.write(fdata("\n\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
-                _._write_list(data[k],fout,tabsize, indent+tabsize, verbose)
+                _._write_list(data[k],fout,tabsize, indent+tabsize)
 
-    def _write_list(_, data, fout, tabsize, indent, verbose):
+    def _write_list(_, data, fout, tabsize, indent):
         if type(data) not in [type([]), type(())]:
             _.log("warning, _write_list ONLY writes lists/tuples. <{}> is not!".format(data))
             return
@@ -627,23 +686,23 @@ class JCParser:
             if isinstance(entry, str):
                 line =  "{}{}".format(" "*indent+""*tabsize, entry)
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif str(entry) in ["True", "False"]:
                 # this comes before checking is data[k] is int as bools are ints!
                 line =  "{}{}:b".format(" "*indent+""*tabsize, entry)
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif isinstance(entry, int):
                 line =  "{}{}:i".format(" "*indent+""*tabsize, entry)
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
             elif isinstance(entry, float):
                 line =  "{}{}:f".format(" "*indent+""*tabsize, entry)
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
                     
             # dict type...
@@ -652,9 +711,9 @@ class JCParser:
                 fout.write(fdata("\n\n"+line))
                 line =  "{}{}".format(" "*indent+" "*tabsize, "# dict data is indented here...")
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
-                _._write(entry,fout,tabsize, indent+tabsize, verbose)
+                _._write(entry,fout,tabsize, indent+tabsize)
 
             # list/tuple type...
             elif isinstance(entry, list) or isinstance(entry, tuple):
@@ -662,9 +721,9 @@ class JCParser:
                 fout.write(fdata("\n\n"+line))
                 line =  "{}{}".format(" "*indent+" "*tabsize, "# list data is indented here...")
                 fout.write(fdata("\n"+line))
-                if verbose:
+                if _.verbose:
                     print(line)
-                _._write_list(entry,fout,tabsize, indent+tabsize,verbose)
+                _._write_list(entry,fout,tabsize, indent+tabsize)
 
     
 def test():
@@ -677,7 +736,13 @@ def test():
     for test_config in test_configs:
         print("\nparsing {}...".format(os.path.join(path,"test",test_config)))
         parser.parse(os.path.join(path,"test",test_config))
-        print ("output:\n{}".format(parser.parsed_data))
+
+        if parser.warnings:
+            print parser.warnings
+        if not parser.status:
+            print parser.errors
+
+        #print ("output:\n{}".format(parser.parsed_data))
         
 if __name__ == "__main__":
     test()
@@ -718,7 +783,17 @@ if __name__ == "__main__":
     }
     
     print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf", verbose=True)
+    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
+    if parser.warnings:
+        print parser.warnings
+    if not parser.status:
+        print parser.errors
+
     print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
     parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+    if parser.warnings:
+        print parser.warnings
+    if not parser.status:
+        print parser.errors
+
     print(parser.parsed_data)
