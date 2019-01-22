@@ -16,7 +16,7 @@ the general format and rules are as follows:
         NB: - bool can be any of true/false or yes/no (case insensitive)
         
 2) supported containers are dictionaries and lists.
-        dictionaries are denoted by {}
+        dictionaries are denoted by {} while
         lists are denoted by []
         
         NB: 
