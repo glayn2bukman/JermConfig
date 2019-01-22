@@ -50,8 +50,8 @@ the general format and rules are as follows:
 
 6) "scope" is determined from indentation(like python)
 
-7) use $ to refer to environment variables as values eg
-        user = $USER
+7) use `$` to refer to environment variables as values eg
+        `user = $USER`
 
 
 ## EXAMPLE 1
