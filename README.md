@@ -41,12 +41,12 @@ the general format and rules are as follows:
         age:i    declares age as an int
         height:f declares height as a float
         
-        marks[]  declares marks as a list
-        marks[f] declares marks as a list of floats unless an item specifies its type
+        marks[]  declares `marks` as a list
+        marks[f] declares `marks` as a list of floats unless an item in the list specifies its type
 
         data{}   declares data as a dictionary
 
-5) commented lines start with #
+5) commented lines start with `#`
 
 6) "scope" is determined from indentation(like python)
 
