@@ -27,7 +27,7 @@ the general format and rules are as follows:
               then it wont have a name as lists dont support key-value pairs, as such, 
               containers declared in lists may not have names
               
-3) magic words can be used to set global variables. these begin and end with __(like __name__)
+3) magic words can be used to set global variables. these begin and end with __(like `__name__`)
         supported magic words are;
     1. `__nonstrictindent__`
     2. `__quiet__`
