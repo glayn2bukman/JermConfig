@@ -23,7 +23,7 @@ the general format and rules are as follows:
             - for lists, you can specify the type of items eg [i] declares a list of integers
             - for dictionaries, the type is implied if the variable is not in a list
             - each item in a list is on a separate line
-            - a container can be in another container but lists if a container is in a list
+            - a container can be in another container but if a container is in a list
               then it wont have a name as lists dont support key-value pairs, as such, 
               containers declared in lists may not have names
               
