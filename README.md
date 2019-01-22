@@ -76,7 +76,7 @@ metadata{}
     'data':{
         'type':'student data', 
         'names':'Dummy Student',
-        'age': 21                 # notice that 21 is an integer as age was declared as age:i
+        'age': 21,                # notice that 21 is an integer as age was declared as age:i
         'marks':[78,84,98,63]     # notice that all makrs are ints as marks was declared as marks[i]
     }, 
 
