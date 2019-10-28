@@ -249,10 +249,12 @@ data = {
     'tutors':['arthur','sofia','jimmy']
 }
 
-print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
-print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+fpath = "/tmp/JermConfig.dummy-conf.jconf"
+
+print("\n\nwritting data to {}...".format(fpath))
+parser.write(data,fpath)
+print("\nparsing {}...".format(fpath))
+parser.parse(fpath)
 print(parser.parsed_data)
 ```
 
