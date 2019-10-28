@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # this module parses and writes Jerm-Config files
 # author: Glayn Bukman <glayn@bukman@gmail.com>
 #
@@ -230,7 +231,7 @@ class JCParser:
         _.parsed_data = {}
         
         # errors encountered when parsing
-        _.error = ""
+        _.errors = ""
 
         # warnings, if any (these can be present even if status is True)
         _.warnings = ""
@@ -257,7 +258,7 @@ class JCParser:
         try:
             fin = open(fpath)
         except:
-            _.error = "could not open config file: <{}>".format(fpath)
+            _.errors = "could not open config file: <{}>".format(fpath)
             if _.verbose:
                 _.log("could not open config file: <{}>".format(fpath))
             return
@@ -267,7 +268,7 @@ class JCParser:
         fin.close()
 
         if not data:
-            _.error = "config file is empty"
+            _.errors = "config file is empty"
             if _.verbose:
                 _.log("config file is empty")
             return 
@@ -605,11 +606,11 @@ class JCParser:
         return False
 
     def _indent_level(_,line):
-        if (not line) or line[0]!=' ': return 0
+        if (not line) or (line[0] not in [' ','\t']): return 0
         
         i, count = 0, 0
         while i<len(line):
-            if line[i]!=' ': break
+            if (line[i] not in [' ','\t']): break
             count += 1
             i += 1
         
@@ -745,55 +746,68 @@ def test():
         #print ("output:\n{}".format(parser.parsed_data))
         
 if __name__ == "__main__":
-    test()
-    
-    # now dumping config file and then parsing it afterwards...
-    parser = JCParser()
-    data = {
-        2: 'hello', # should be skipped as key is not a string
+	import sys
+	if len(sys.argv)>1:
+		parser = JCParser(sys.argv[1])
+		print "[warnings]"
+		print parser.warnings
 
-        'N.O.S': 2,
-        'login-handler': lambda x:x, # should be skipped as functions aint supported
-        
-        'graduates': True,
-        
-        'students':{            
-            'bukman':{
-                'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
-                'average': 79.75,
-                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-                'credentials':{
-                    'username': 'bukman?',
-                    'passcode': '1603'
-                }
-            },
+		print "[errors]"
+		print parser.errors
 
-            'glayn':{
-                'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
-                'average': 63.25,
-                'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-                'credentials':{
-                    'username': 'glayn!!',
-                    'passcode': '0628'
-                }
-            }
-        },
-        
-        'tutors':['arthur','sofia','jimmy']
-    }
-    
-    print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-    parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
-    if parser.warnings:
-        print parser.warnings
-    if not parser.status:
-        print parser.errors
+		print "[data]"
+		print parser.parsed_data
 
-    print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-    parser.parse("/tmp/JermConfig.dummy-conf.jconf")
-    if parser.warnings:
-        print parser.warnings
-    if not parser.status:
-        print parser.errors
+	else:
+		test()
+		
+		# now dumping config file and then parsing it afterwards...
+		parser = JCParser()
+		data = {
+			2: 'hello', # should be skipped as key is not a string
 
-    print(parser.parsed_data)
+			'N.O.S': 2,
+			'login-handler': lambda x:x, # should be skipped as functions aint supported
+			
+			'graduates': True,
+			
+			'students':{            
+				'bukman':{
+					'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
+					'average': 79.75,
+					'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+					'credentials':{
+						'username': 'bukman?',
+						'passcode': '1603'
+					}
+				},
+
+				'glayn':{
+					'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
+					'average': 63.25,
+					'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+					'credentials':{
+						'username': 'glayn!!',
+						'passcode': '0628'
+					}
+				}
+			},
+			
+			'tutors':['arthur','sofia','jimmy']
+		}
+		
+		print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+		parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
+		if parser.warnings:
+			print parser.warnings
+		if not parser.status:
+			print parser.errors
+
+		print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+		parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+		if parser.warnings:
+			print parser.warnings
+		if not parser.status:
+			print parser.errors
+
+		print(parser.parsed_data)
