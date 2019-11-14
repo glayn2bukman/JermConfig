@@ -334,7 +334,89 @@ class JCParser:
 
                 key,value = line[:line.index("=")].strip(), line[line.index("=")+1:].strip()
                 
-                value = os.getenv(value[1:]) if value.startswith("$") else value
+                # environment variables -------------------------------
+                _env_vars = []
+                _copy_vars = [] # variables that are references of others already parsed
+                prev_pos, prev_copy_pos = 0, 0
+                _scanning, _copy_scanning = 0, 0
+                value += ' ' # prevent a rare bug where $ENVVAR was the last on the line
+                for _pos, c in enumerate(value):
+                	if '$'==c:
+                		if _pos and (value[_pos-1] in ['\\']):
+                			_scanning = 0
+                			continue
+							
+                		_scanning = 1
+                		prev_pos  = _pos
+                		continue
+
+                	if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
+                		_env_vars.append(value[prev_pos+1:_pos])
+                		_scanning = 0
+
+                	if '`'==c:
+                		if _pos and (value[_pos-1] in ['\\']):
+                			#if _copy_scanning = 0
+                			continue
+							
+                		if not _copy_scanning:
+							_copy_scanning = 1
+							prev_copy_pos  = _pos
+							continue
+
+                		_copy_vars.append(value[prev_copy_pos+1:_pos])
+                		_copy_scanning = 0
+
+                for _env_var in _env_vars:
+                	_ev = os.getenv(_env_var)
+                	if not _ev: continue
+                	value = value.replace('$'+_env_var, _ev)
+
+                for _cv in _copy_vars:
+                	if not _cv: continue
+                	_parts = [i.strip() for i in _cv.split('/')] # we can have paths
+                	_pd = _.parsed_data
+                	for _pi,_part in enumerate(_parts):
+                		_cpy = None
+                		try:
+                			if '[' in _part:
+                				exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                				if type(_cpy)!=type([]):
+                					_.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
+                					if _.__verbose__:
+                						_.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
+                					break
+                				try:
+                					exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                				except:
+                					_.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
+                					if _.__verbose__:
+                						_.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
+                					break
+                					
+                			else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                		except:
+                			_.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
+                			if _.__verbose__:
+                				_.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
+                			break
+
+                		if None!=_cpy:
+                			if type(_cpy) not in [type(""),type(0),type(0.0)]:
+                				# _cpy is an object, not just a constant
+                				if _pi==(len(_parts)-1):
+                					if ("`"+_cv+"`").strip()==value.strip():
+                						value = _cpy
+                					else:
+                						value = value.replace('`'+_cv+'`', str(_cpy))
+                				else:
+                					_pd = _cpy
+                			else:
+                				value = value.replace('`'+_cv+'`', _cpy)
+
+                value = value[:-1]
+                # -----------------------------------------------------
+						                
 
                 if ("{" in key)or("}" in key)or("[" in key)or("]" in key):
                     _.errors += "syntax error, key contains container characters(line {})\n".format(line_count)
@@ -381,6 +463,90 @@ class JCParser:
 
             else:
                 obj = None
+
+                # environment variables -------------------------------
+                _env_vars = []
+                _copy_vars = [] # variables that are references of others already parsed
+                prev_pos, prev_copy_pos = 0, 0
+                _scanning, _copy_scanning = 0, 0
+                line += ' ' # prevent a rare bug where $ENVVAR was the last on the line
+                for _pos, c in enumerate(line):
+                	if '$'==c:
+                		if _pos and (line[_pos-1] in ['\\']):
+                			_scanning = 0
+                			continue
+							
+                		_scanning = 1
+                		prev_pos  = _pos
+                		continue
+
+                	if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
+                		_env_vars.append(line[prev_pos+1:_pos])
+                		_scanning = 0
+
+                	if '`'==c:
+                		if _pos and (line[_pos-1] in ['\\']):
+                			#if _copy_scanning = 0
+                			continue
+							
+                		if not _copy_scanning:
+							_copy_scanning = 1
+							prev_copy_pos  = _pos
+							continue
+
+                		_copy_vars.append(line[prev_copy_pos+1:_pos])
+                		_copy_scanning = 0
+
+                for _env_var in _env_vars:
+                	_ev = os.getenv(_env_var)
+                	if not _ev: continue
+                	line = line.replace('$'+_env_var, _ev)
+
+                for _cv in _copy_vars:
+                	if not _cv: continue
+                	_parts = [i.strip() for i in _cv.split('/')] # we can have paths
+                	_pd = _.parsed_data
+                	for _pi,_part in enumerate(_parts):
+                		_cpy = None
+                		try:
+                			if '[' in _part:
+                				exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                				if type(_cpy)!=type([]):
+                					_.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
+                					if _.__verbose__:
+                						_.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
+                					break
+                				try:
+                					exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                				except:
+                					_.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
+                					if _.__verbose__:
+                						_.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
+                					break
+                					
+                			else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                		except:
+                			_.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
+                			if _.__verbose__:
+                				_.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
+                			break
+
+                		if None!=_cpy:
+                			if type(_cpy) not in [type(""),type(0),type(0.0)]:
+                				# _cpy is an object, not just a constant
+                				if _pi==(len(_parts)-1):
+                					if ("`"+_cv+"`").strip()==line.strip():
+                						line = _cpy
+                					else:
+                						line = line.replace('`'+_cv+'`', str(_cpy))
+                				else:
+                					_pd = _cpy
+                			else:
+                				line = line.replace('`'+_cv+'`', _cpy)
+
+                line = line[:-1]
+                # -----------------------------------------------------
+
                 if ("{" in line)or("}" in line):
                     if (not line.endswith("{}"))or (line.count("{")!=1 or line.count("}")!=1):
                         _.errors += "syntax error(line {}); dict containers are defined in format var{}\n".format(line_count,'{}')
