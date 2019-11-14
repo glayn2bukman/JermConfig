@@ -53,10 +53,27 @@ the general format and rules are as follows:
 7) use `$` to refer to environment variables as values eg
         `user = $USER`
 
-8) use ```var``` to reference variables eg
+8) use `\`var\`` to reference variables eg
 
         root = /tmp/$USER/prg
+        
+        # reference root in another path (logdir)
         logdir = `root`/log
+        
+        images = img
+        
+        # reference more than one variable
+        media = `root`/`images`
+        
+        data{}
+                size:i = 1024
+                types[]
+                        wav
+                        mp3
+
+        # reference full variable path
+        max-size:i = `data/size`
+        default-type = `data/types[1]`
 
 ## EXAMPLE 1
 ### config data
