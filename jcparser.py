@@ -412,7 +412,7 @@ class JCParser:
                 				else:
                 					_pd = _cpy
                 			else:
-                				value = value.replace('`'+_cv+'`', _cpy)
+                				value = value.replace('`'+_cv+'`', str(_cpy))
 
                 value = value[:-1]
                 # -----------------------------------------------------
@@ -451,9 +451,9 @@ class JCParser:
                     try:
                         value = JCParser.types[t](value)
                     except:
-                        _.errors += "type error(line {}); key idefined value as of type <{}> but value can't be parsed to this type\n".format(line_count, t)
+                        _.errors += "type error(line {}); key defined value as of type <{}> but value can't be parsed to this type\n".format(line_count, t)
                         if _.__verbose__:
-                            _.log("type error(line {}); key idefined value as of type <{}> but value can't be parsed to this type".format(line_count, t))
+                            _.log("type error(line {}); key defined value as of type <{}> but value can't be parsed to this type".format(line_count, t))
                         if _.__strictsyntax__:
                             _.parsed_data = {}
                             return
@@ -542,7 +542,7 @@ class JCParser:
                 				else:
                 					_pd = _cpy
                 			else:
-                				line = line.replace('`'+_cv+'`', _cpy)
+                				line = line.replace('`'+_cv+'`', str(_cpy))
 
                 line = line[:-1]
                 # -----------------------------------------------------
