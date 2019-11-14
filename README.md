@@ -54,8 +54,9 @@ the general format and rules are as follows:
         `user = $USER`
 
 8) use ```var``` to reference variables eg
-        ``root = /tmp/$USER/prg``
-        ``logdir = \`root\`/log``
+
+        root = /tmp/$USER/prg
+        logdir = `root`/log
 
 ## EXAMPLE 1
 ### config data
