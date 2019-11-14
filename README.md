@@ -53,7 +53,7 @@ the general format and rules are as follows:
 7) use `$` to refer to environment variables as values eg
         `user = $USER`
 
-8) use ``var`` to reference variables eg
+8) use ```var``` to reference variables eg
 
         root = /tmp/$USER/prg
         
