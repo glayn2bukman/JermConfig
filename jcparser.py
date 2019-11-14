@@ -341,82 +341,82 @@ class JCParser:
                 _scanning, _copy_scanning = 0, 0
                 value += ' ' # prevent a rare bug where $ENVVAR was the last on the line
                 for _pos, c in enumerate(value):
-                	if '$'==c:
-                		if _pos and (value[_pos-1] in ['\\']):
-                			_scanning = 0
-                			continue
-							
-                		_scanning = 1
-                		prev_pos  = _pos
-                		continue
+                    if '$'==c:
+                        if _pos and (value[_pos-1] in ['\\']):
+                            _scanning = 0
+                            continue
+                            
+                        _scanning = 1
+                        prev_pos  = _pos
+                        continue
 
-                	if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
-                		_env_vars.append(value[prev_pos+1:_pos])
-                		_scanning = 0
+                    if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
+                        _env_vars.append(value[prev_pos+1:_pos])
+                        _scanning = 0
 
-                	if '`'==c:
-                		if _pos and (value[_pos-1] in ['\\']):
-                			#if _copy_scanning = 0
-                			continue
-							
-                		if not _copy_scanning:
-							_copy_scanning = 1
-							prev_copy_pos  = _pos
-							continue
+                    if '`'==c:
+                        if _pos and (value[_pos-1] in ['\\']):
+                            #if _copy_scanning = 0
+                            continue
+                            
+                        if not _copy_scanning:
+                            _copy_scanning = 1
+                            prev_copy_pos  = _pos
+                            continue
 
-                		_copy_vars.append(value[prev_copy_pos+1:_pos])
-                		_copy_scanning = 0
+                        _copy_vars.append(value[prev_copy_pos+1:_pos])
+                        _copy_scanning = 0
 
                 for _env_var in _env_vars:
-                	_ev = os.getenv(_env_var)
-                	if not _ev: continue
-                	value = value.replace('$'+_env_var, _ev)
+                    _ev = os.getenv(_env_var)
+                    if not _ev: continue
+                    value = value.replace('$'+_env_var, _ev)
 
                 for _cv in _copy_vars:
-                	if not _cv: continue
-                	_parts = [i.strip() for i in _cv.split('/')] # we can have paths
-                	_pd = _.parsed_data
-                	for _pi,_part in enumerate(_parts):
-                		_cpy = None
-                		try:
-                			if '[' in _part:
-                				exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
-                				if type(_cpy)!=type([]):
-                					_.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
-                					if _.__verbose__:
-                						_.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
-                					break
-                				try:
-                					exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
-                				except:
-                					_.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
-                					if _.__verbose__:
-                						_.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
-                					break
-                					
-                			else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
-                		except:
-                			_.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
-                			if _.__verbose__:
-                				_.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
-                			break
+                    if not _cv: continue
+                    _parts = [i.strip() for i in _cv.split('/')] # we can have paths
+                    _pd = _.parsed_data
+                    for _pi,_part in enumerate(_parts):
+                        _cpy = None
+                        try:
+                            if '[' in _part:
+                                exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                                if type(_cpy)!=type([]):
+                                    _.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
+                                    if _.__verbose__:
+                                        _.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
+                                    break
+                                try:
+                                    exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                                except:
+                                    _.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
+                                    if _.__verbose__:
+                                        _.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
+                                    break
+                                    
+                            else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                        except:
+                            _.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
+                            if _.__verbose__:
+                                _.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
+                            break
 
-                		if None!=_cpy:
-                			if type(_cpy) not in [type(""),type(0),type(0.0)]:
-                				# _cpy is an object, not just a constant
-                				if _pi==(len(_parts)-1):
-                					if ("`"+_cv+"`").strip()==value.strip():
-                						value = _cpy
-                					else:
-                						value = value.replace('`'+_cv+'`', str(_cpy))
-                				else:
-                					_pd = _cpy
-                			else:
-                				value = value.replace('`'+_cv+'`', str(_cpy))
+                        if None!=_cpy:
+                            if type(_cpy) not in [type(""),type(0),type(0.0)]:
+                                # _cpy is an object, not just a constant
+                                if _pi==(len(_parts)-1):
+                                    if ("`"+_cv+"`").strip()==value.strip():
+                                        value = _cpy
+                                    else:
+                                        value = value.replace('`'+_cv+'`', str(_cpy))
+                                else:
+                                    _pd = _cpy
+                            else:
+                                value = value.replace('`'+_cv+'`', str(_cpy))
 
                 value = value[:-1]
                 # -----------------------------------------------------
-						                
+                                        
 
                 if ("{" in key)or("}" in key)or("[" in key)or("]" in key):
                     _.errors += "syntax error, key contains container characters(line {})\n".format(line_count)
@@ -471,78 +471,78 @@ class JCParser:
                 _scanning, _copy_scanning = 0, 0
                 line += ' ' # prevent a rare bug where $ENVVAR was the last on the line
                 for _pos, c in enumerate(line):
-                	if '$'==c:
-                		if _pos and (line[_pos-1] in ['\\']):
-                			_scanning = 0
-                			continue
-							
-                		_scanning = 1
-                		prev_pos  = _pos
-                		continue
+                    if '$'==c:
+                        if _pos and (line[_pos-1] in ['\\']):
+                            _scanning = 0
+                            continue
+                            
+                        _scanning = 1
+                        prev_pos  = _pos
+                        continue
 
-                	if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
-                		_env_vars.append(line[prev_pos+1:_pos])
-                		_scanning = 0
+                    if _scanning and (c.lower() not in 'abcdefghijklmnopqrstuvwxyz_0123456789'):
+                        _env_vars.append(line[prev_pos+1:_pos])
+                        _scanning = 0
 
-                	if '`'==c:
-                		if _pos and (line[_pos-1] in ['\\']):
-                			#if _copy_scanning = 0
-                			continue
-							
-                		if not _copy_scanning:
-							_copy_scanning = 1
-							prev_copy_pos  = _pos
-							continue
+                    if '`'==c:
+                        if _pos and (line[_pos-1] in ['\\']):
+                            #if _copy_scanning = 0
+                            continue
+                            
+                        if not _copy_scanning:
+                            _copy_scanning = 1
+                            prev_copy_pos  = _pos
+                            continue
 
-                		_copy_vars.append(line[prev_copy_pos+1:_pos])
-                		_copy_scanning = 0
+                        _copy_vars.append(line[prev_copy_pos+1:_pos])
+                        _copy_scanning = 0
 
                 for _env_var in _env_vars:
-                	_ev = os.getenv(_env_var)
-                	if not _ev: continue
-                	line = line.replace('$'+_env_var, _ev)
+                    _ev = os.getenv(_env_var)
+                    if not _ev: continue
+                    line = line.replace('$'+_env_var, _ev)
 
                 for _cv in _copy_vars:
-                	if not _cv: continue
-                	_parts = [i.strip() for i in _cv.split('/')] # we can have paths
-                	_pd = _.parsed_data
-                	for _pi,_part in enumerate(_parts):
-                		_cpy = None
-                		try:
-                			if '[' in _part:
-                				exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
-                				if type(_cpy)!=type([]):
-                					_.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
-                					if _.__verbose__:
-                						_.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
-                					break
-                				try:
-                					exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
-                				except:
-                					_.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
-                					if _.__verbose__:
-                						_.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
-                					break
-                					
-                			else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
-                		except:
-                			_.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
-                			if _.__verbose__:
-                				_.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
-                			break
+                    if not _cv: continue
+                    _parts = [i.strip() for i in _cv.split('/')] # we can have paths
+                    _pd = _.parsed_data
+                    for _pi,_part in enumerate(_parts):
+                        _cpy = None
+                        try:
+                            if '[' in _part:
+                                exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                                if type(_cpy)!=type([]):
+                                    _.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
+                                    if _.__verbose__:
+                                        _.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
+                                    break
+                                try:
+                                    exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                                except:
+                                    _.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
+                                    if _.__verbose__:
+                                        _.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
+                                    break
+                                    
+                            else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                        except:
+                            _.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
+                            if _.__verbose__:
+                                _.log("reference error, could not find reference `{}` (line {})\n".format(_cv,line_count))
+                            break
 
-                		if None!=_cpy:
-                			if type(_cpy) not in [type(""),type(0),type(0.0)]:
-                				# _cpy is an object, not just a constant
-                				if _pi==(len(_parts)-1):
-                					if ("`"+_cv+"`").strip()==line.strip():
-                						line = _cpy
-                					else:
-                						line = line.replace('`'+_cv+'`', str(_cpy))
-                				else:
-                					_pd = _cpy
-                			else:
-                				line = line.replace('`'+_cv+'`', str(_cpy))
+                        if None!=_cpy:
+                            if type(_cpy) not in [type(""),type(0),type(0.0)]:
+                                # _cpy is an object, not just a constant
+                                if _pi==(len(_parts)-1):
+                                    if ("`"+_cv+"`").strip()==line.strip():
+                                        line = _cpy
+                                    else:
+                                        line = line.replace('`'+_cv+'`', str(_cpy))
+                                else:
+                                    _pd = _cpy
+                            else:
+                                line = line.replace('`'+_cv+'`', str(_cpy))
 
                 line = line[:-1]
                 # -----------------------------------------------------
@@ -905,75 +905,75 @@ def test():
         parser.parse(os.path.join(path,"test",test_config))
 
         if parser.warnings:
-            print parser.warnings
+            print (parser.warnings)
         if not parser.status:
-            print parser.errors
+            print (parser.errors)
 
         #print ("output:\n{}".format(parser.parsed_data))
         
 if __name__ == "__main__":
-	import sys
-	if len(sys.argv)>1:
-		parser = JCParser(sys.argv[1])
-		print "[warnings]"
-		print parser.warnings
+    import sys
+    if len(sys.argv)>1:
+        parser = JCParser(sys.argv[1])
+        print ("[warnings]")
+        print (parser.warnings)
 
-		print "[errors]"
-		print parser.errors
+        print ("[errors]")
+        print (parser.errors)
 
-		print "[data]"
-		print parser.parsed_data
+        print ("[data]")
+        print (parser.parsed_data)
 
-	else:
-		test()
-		
-		# now dumping config file and then parsing it afterwards...
-		parser = JCParser()
-		data = {
-			2: 'hello', # should be skipped as key is not a string
+    else:
+        test()
+        
+        # now dumping config file and then parsing it afterwards...
+        parser = JCParser()
+        data = {
+            2: 'hello', # should be skipped as key is not a string
 
-			'N.O.S': 2,
-			'login-handler': lambda x:x, # should be skipped as functions aint supported
-			
-			'graduates': True,
-			
-			'students':{            
-				'bukman':{
-					'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
-					'average': 79.75,
-					'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-					'credentials':{
-						'username': 'bukman?',
-						'passcode': '1603'
-					}
-				},
+            'N.O.S': 2,
+            'login-handler': lambda x:x, # should be skipped as functions aint supported
+            
+            'graduates': True,
+            
+            'students':{            
+                'bukman':{
+                    'grades':[89,72,['other',56,12.08,{'inner':{'deeper':[1,2,3]}}],64,94],
+                    'average': 79.75,
+                    'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                    'credentials':{
+                        'username': 'bukman?',
+                        'passcode': '1603'
+                    }
+                },
 
-				'glayn':{
-					'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
-					'average': 63.25,
-					'units': ('CS101', 'CS103', 'CS107', 'CS202'),
-					'credentials':{
-						'username': 'glayn!!',
-						'passcode': '0628'
-					}
-				}
-			},
-			
-			'tutors':['arthur','sofia','jimmy']
-		}
-		
-		print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-		parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
-		if parser.warnings:
-			print parser.warnings
-		if not parser.status:
-			print parser.errors
+                'glayn':{
+                    'grades':[80,32,69,72, {'name':'data', 'results':[15,98,False,63.0]}],
+                    'average': 63.25,
+                    'units': ('CS101', 'CS103', 'CS107', 'CS202'),
+                    'credentials':{
+                        'username': 'glayn!!',
+                        'passcode': '0628'
+                    }
+                }
+            },
+            
+            'tutors':['arthur','sofia','jimmy']
+        }
+        
+        print("\n\nwritting data to {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+        parser.write(data,"/tmp/JermConfig.dummy-conf.jconf")
+        if parser.warnings:
+            print (parser.warnings)
+        if not parser.status:
+            print (parser.errors)
 
-		print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
-		parser.parse("/tmp/JermConfig.dummy-conf.jconf")
-		if parser.warnings:
-			print parser.warnings
-		if not parser.status:
-			print parser.errors
+        print("\nparsing {}...".format("/tmp/JermConfig.dummy-conf.jconf"))
+        parser.parse("/tmp/JermConfig.dummy-conf.jconf")
+        if parser.warnings:
+            print (parser.warnings)
+        if not parser.status:
+            print (parser.errors)
 
-		print(parser.parsed_data)
+        print(parser.parsed_data)
