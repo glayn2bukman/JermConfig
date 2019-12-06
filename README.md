@@ -288,6 +288,22 @@ parser.parse(fpath)
 print(parser.parsed_data)
 ```
 
+### use the inbuilt auto-update feature of JermConfig
+```python
+from JermConfig import JCParser
+
+data,_data = {}, {};
+
+# the keyword 'container' represents the data object to be updated whenever the config file changes
+# for this to work, 'autoupdate' has to be set to True
+JCParser('/tmp/test.jconf', verbose=False, autoupdate=True, container=data)
+
+while 1:
+    if data != _data:
+        _data = data
+        print data
+```
+
 ## Installation
 1. Download this repo
 2. Extract the repo(JermConfig) from the zip file
