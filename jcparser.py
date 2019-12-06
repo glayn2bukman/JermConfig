@@ -179,6 +179,7 @@ data
 
 __ALL__ = ["JCParser", "test"]
 import os, sys
+import threading, time # for when we need to monitor the config file for any automatic updates...
 
 HELP = """# this is a comment
 # this config file uses indentation(spaces NOT tabs) to determine levels
@@ -200,6 +201,44 @@ HELP = """# this is a comment
 
 TAB_SIZE = 4 # spaces
 
+AUTO_UPDATING = {} # 
+
+def _autoupdate_jconfig():
+    '''
+    daemon that monitors all config files that needs autoupdating and 
+    autoupdates em when their last modification time changes...
+    
+    this function should be run as a separate thread, OBVIOUSLY
+    '''
+    
+    global AUTO_UPDATING
+    pobj, obsolete = None, []
+    while 1:
+		obsolete = []
+				
+		for fpath in AUTO_UPDATING:
+			if not os.path.isfile(fpath):
+				obsolete.append(fpath)
+				continue
+				
+			if ('mtime' not in AUTO_UPDATING[fpath]) or (
+				os.stat(fpath).st_mtime != AUTO_UPDATING[fpath]['mtime']):
+					
+				pobj = JCParser(fpath, verbose=False)
+				if pobj.status:
+					print pobj.parsed_data
+					AUTO_UPDATING[fpath]['obj'].parsed_data = pobj.parsed_data
+					AUTO_UPDATING[fpath]['obj'].status = pobj.status
+					AUTO_UPDATING[fpath]['obj'].warnings = pobj.warnings
+					AUTO_UPDATING[fpath]['obj'].errors = pobj.errors
+					AUTO_UPDATING[fpath]['mtime'] = os.stat(fpath).st_mtime
+		
+		for fpath in obsolete:
+			print 'deleting obsolete autp-update paths: {}'.format(fpath)
+			del AUTO_UPDATING[fpath]
+
+		time.sleep(1) # time delay for checking if a config file's been updated
+    
 def fdata(data):
     if sys.version_info[0]==3:
         return bytes(data, "utf-8")
@@ -223,7 +262,15 @@ class JCParser:
     basic_types = sorted([k for k in types.keys() if len(k)==1])
     list_types = sorted([k for k in types.keys() if ("["in k)])
     
-    def __init__(_, fpath="", verbose=False):
+    def __init__(_, fpath="", verbose=False, autoupdate=False, container=None):
+        '''
+        autoupdate: if True/1, the config file will be monitore for any updates
+                    if the file is updated and the new config data is parsable
+                    without errors, the `container` will be updated to hold the
+                    new parsed data
+        container: an empty dictionary object that will contain the parsed data
+                   this can be provided with or without the `autoupdate` flag
+        '''
         # flag to show if parsing/writting was ok
         _.status = False
         
@@ -240,6 +287,22 @@ class JCParser:
         
         if fpath:
             _.parse(fpath)
+
+        _._operations = {
+            'data': _.parsed_data,
+            'autoupdate': autoupdate,
+            'verbose': verbose,
+        }
+
+        _.fpath = fpath
+        _.autoupdate = autoupdate
+        _.container = container
+        container = _.parsed_data
+
+        if (container!=None) and autoupdate and (fpath not in AUTO_UPDATING)\
+            and fpath and os.path.isfile(fpath):
+                
+            AUTO_UPDATING[fpath] = {'obj': _}
 
     def _reset(_):
         _.status = False
@@ -910,6 +973,11 @@ def test():
             print (parser.errors)
 
         #print ("output:\n{}".format(parser.parsed_data))
+
+
+_jconf_auto_update_daemon = threading.Thread(target=_autoupdate_jconfig, args=())
+_jconf_auto_update_daemon.daemon = True
+_jconf_auto_update_daemon.start()
         
 if __name__ == "__main__":
     import sys
