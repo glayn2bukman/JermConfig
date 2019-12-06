@@ -299,7 +299,7 @@ data,_data = {}, {};
 JCParser('/tmp/test.jconf', verbose=False, autoupdate=True, container=data)
 
 while 1:
-    if data != _data:
+    if data != _data: # this will be true when the config file is updated/edited and the update is PARSABLE
         _data = data
         print data
 ```
