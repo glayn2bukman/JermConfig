@@ -295,7 +295,7 @@ from JermConfig import JCParser
 data,_data = {}, {};
 
 # the keyword 'container' represents the data object to be updated whenever the config file changes
-# for this to work, 'autoupdate' has to be set to True
+# for this to work, 'autoupdate' has to be set to True and a filepath HAS to be given to JCParser
 JCParser('/tmp/test.jconf', verbose=False, autoupdate=True, container=data)
 
 while 1:
