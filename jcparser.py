@@ -226,7 +226,6 @@ def _autoupdate_jconfig():
 					
 				pobj = JCParser(fpath, verbose=False)
 				if pobj.status:
-					print pobj.parsed_data
 					AUTO_UPDATING[fpath]['obj'].parsed_data = pobj.parsed_data
 					AUTO_UPDATING[fpath]['obj'].status = pobj.status
 					AUTO_UPDATING[fpath]['obj'].warnings = pobj.warnings
