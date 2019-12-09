@@ -231,12 +231,17 @@ def _autoupdate_jconfig():
 					AUTO_UPDATING[fpath]['obj'].warnings = pobj.warnings
 					AUTO_UPDATING[fpath]['obj'].errors = pobj.errors
 					AUTO_UPDATING[fpath]['mtime'] = os.stat(fpath).st_mtime
+					
+					AUTO_UPDATING[fpath]['obj'].container.clear()
+					for k in pobj.parsed_data:
+						AUTO_UPDATING[fpath]['obj'].container[k] = pobj.parsed_data[k]
+					
 		
 		for fpath in obsolete:
 			print 'deleting obsolete autp-update paths: {}'.format(fpath)
 			del AUTO_UPDATING[fpath]
 
-		time.sleep(1) # time delay for checking if a config file's been updated
+		time.sleep(0.1) # time delay for checking if a config file's been updated
     
 def fdata(data):
     if sys.version_info[0]==3:
@@ -284,6 +289,10 @@ class JCParser:
         
         _.verbose = verbose
         
+        _.fpath = fpath
+        _.autoupdate = autoupdate
+        _.container = container
+
         if fpath:
             _.parse(fpath)
 
@@ -293,15 +302,14 @@ class JCParser:
             'verbose': verbose,
         }
 
-        _.fpath = fpath
-        _.autoupdate = autoupdate
-        _.container = container
-        container = _.parsed_data
+        #container = _.parsed_data
+        #_.parsed_data = container
 
         if (container!=None) and autoupdate and (fpath not in AUTO_UPDATING)\
             and fpath and os.path.isfile(fpath):
                 
             AUTO_UPDATING[fpath] = {'obj': _}
+            time.sleep(0.1) # give _autoupdate_jconfig to effect changes
 
     def _reset(_):
         _.status = False
@@ -771,6 +779,10 @@ class JCParser:
                         obj = parent[line]
                         indents[indent] = obj
 
+		if _.container!=None:
+			_.container.clear()
+			for k in _.parsed_data:
+				_.container[k] = _.parsed_data[k]
         _.status = True
                             
     def write(_, data, fout_path, tabsize=TAB_SIZE):
@@ -1044,3 +1056,9 @@ if __name__ == "__main__":
             print (parser.errors)
 
         print(parser.parsed_data)
+
+        xsettings = {}
+        print '...'   
+        print JCParser("/tmp/JermConfig.dummy-conf.jconf",container=xsettings).status
+        print '...'   
+        print xsettings
