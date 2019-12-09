@@ -304,6 +304,21 @@ while 1:
         print data
 ```
 
+### pass a container to JCParser without using the auto-update feature
+```python
+from JermConfig import JCParser
+import sys
+
+data= {};
+
+# this will parse the config file and if sucessfull, will store the parsed data in 'container'
+if not JCParser('/tmp/test.jconf', container=data).status:
+    sys.exit("failed to parse config file")
+
+print "config file data: {}".format(data)
+
+```
+
 ## Installation
 1. Download this repo
 2. Extract the repo(JermConfig) from the zip file
