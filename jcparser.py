@@ -181,6 +181,8 @@ __ALL__ = ["JCParser", "test"]
 import os, sys
 import threading, time # for when we need to monitor the config file for any automatic updates...
 
+PY_VERSION = sys.version_info[0]
+
 HELP = """# this is a comment
 # this config file uses indentation(spaces NOT tabs) to determine levels
 # it supports containers (dictionaries and lists), integers, floats, bool and strings(default type)
@@ -453,21 +455,23 @@ class JCParser:
                         _cpy = None
                         try:
                             if '[' in _part:
-                                exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                                _cpy = eval("_pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                                    
                                 if type(_cpy)!=type([]):
                                     _.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
                                     if _.__verbose__:
                                         _.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
                                     break
                                 try:
-                                    exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                                    _cpy = eval("_cpy{}".format(_part[_part.index('['):]))
                                 except:
                                     _.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
                                     if _.__verbose__:
                                         _.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
                                     break
                                     
-                            else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                            else:
+                                _cpy = eval("_pd.get(\"{}\",None)".format(_part));
                         except:
                             _.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
                             if _.__verbose__:
@@ -543,6 +547,7 @@ class JCParser:
                 prev_pos, prev_copy_pos = 0, 0
                 _scanning, _copy_scanning = 0, 0
                 line += ' ' # prevent a rare bug where $ENVVAR was the last on the line
+
                 for _pos, c in enumerate(line):
                     if '$'==c:
                         if _pos and (line[_pos-1] in ['\\']):
@@ -583,21 +588,23 @@ class JCParser:
                         _cpy = None
                         try:
                             if '[' in _part:
-                                exec("_cpy = _pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+                                _cpy = eval("_pd.get(\"{}\",None)".format(_part[:_part.index('[')]));
+
                                 if type(_cpy)!=type([]):
                                     _.warnings += "reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count)
                                     if _.__verbose__:
                                         _.log("reference error, indexing non-list reference `{}` (line {})\n".format(_cv,line_count))
                                     break
                                 try:
-                                    exec("_cpy = _cpy{}".format(_part[_part.index('['):]))
+                                    _cpy = eval("_cpy{}".format(_part[_part.index('['):]))
                                 except:
                                     _.warnings += "reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count)
                                     if _.__verbose__:
                                         _.log("reference error, index out of range for list reference `{}` (line {})\n".format(_cv,line_count))
                                     break
                                     
-                            else: exec("_cpy = _pd.get(\"{}\",None)".format(_part));
+                            else:
+                                _cpy = eval("_pd.get(\"{}\",None)".format(_part));
                         except:
                             _.warnings += "reference error, could not find reference `{}` (line {})\n".format(_cv,line_count)
                             if _.__verbose__:
