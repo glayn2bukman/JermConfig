@@ -214,34 +214,37 @@ def _autoupdate_jconfig():
     global AUTO_UPDATING
     pobj, obsolete = None, []
     while 1:
-		obsolete = []
-				
-		for fpath in AUTO_UPDATING:
-			if not os.path.isfile(fpath):
-				obsolete.append(fpath)
-				continue
-				
-			if ('mtime' not in AUTO_UPDATING[fpath]) or (
-				os.stat(fpath).st_mtime != AUTO_UPDATING[fpath]['mtime']):
-					
-				pobj = JCParser(fpath, verbose=False)
-				if pobj.status:
-					AUTO_UPDATING[fpath]['obj'].parsed_data = pobj.parsed_data
-					AUTO_UPDATING[fpath]['obj'].status = pobj.status
-					AUTO_UPDATING[fpath]['obj'].warnings = pobj.warnings
-					AUTO_UPDATING[fpath]['obj'].errors = pobj.errors
-					AUTO_UPDATING[fpath]['mtime'] = os.stat(fpath).st_mtime
-					
-					AUTO_UPDATING[fpath]['obj'].container.clear()
-					for k in pobj.parsed_data:
-						AUTO_UPDATING[fpath]['obj'].container[k] = pobj.parsed_data[k]
-					
-		
-		for fpath in obsolete:
-			print 'deleting obsolete autp-update paths: {}'.format(fpath)
-			del AUTO_UPDATING[fpath]
+        obsolete = []
+                
+        try: 'x' in AUTO_UPDATING
+        except: return # calling thread perhaps is dead
 
-		time.sleep(0.1) # time delay for checking if a config file's been updated
+        for fpath in AUTO_UPDATING:
+            if not os.path.isfile(fpath):
+                obsolete.append(fpath)
+                continue
+                
+            if ('mtime' not in AUTO_UPDATING[fpath]) or (
+                os.stat(fpath).st_mtime != AUTO_UPDATING[fpath]['mtime']):
+                    
+                pobj = JCParser(fpath, verbose=False)
+                if pobj.status:
+                    AUTO_UPDATING[fpath]['obj'].parsed_data = pobj.parsed_data
+                    AUTO_UPDATING[fpath]['obj'].status = pobj.status
+                    AUTO_UPDATING[fpath]['obj'].warnings = pobj.warnings
+                    AUTO_UPDATING[fpath]['obj'].errors = pobj.errors
+                    AUTO_UPDATING[fpath]['mtime'] = os.stat(fpath).st_mtime
+                    
+                    AUTO_UPDATING[fpath]['obj'].container.clear()
+                    for k in pobj.parsed_data:
+                        AUTO_UPDATING[fpath]['obj'].container[k] = pobj.parsed_data[k]
+                    
+        
+        for fpath in obsolete:
+            print('deleting obsolete autp-update paths: {}'.format(fpath))
+            del AUTO_UPDATING[fpath]
+
+        time.sleep(0.1) # time delay for checking if a config file's been updated
     
 def fdata(data):
     if sys.version_info[0]==3:
@@ -779,10 +782,10 @@ class JCParser:
                         obj = parent[line]
                         indents[indent] = obj
 
-		if _.container!=None:
-			_.container.clear()
-			for k in _.parsed_data:
-				_.container[k] = _.parsed_data[k]
+        if _.container!=None:
+            _.container.clear()
+            for k in _.parsed_data:
+                _.container[k] = _.parsed_data[k]
         _.status = True
                             
     def write(_, data, fout_path, tabsize=TAB_SIZE):
@@ -1058,7 +1061,7 @@ if __name__ == "__main__":
         print(parser.parsed_data)
 
         xsettings = {}
-        print '...'   
-        print JCParser("/tmp/JermConfig.dummy-conf.jconf",container=xsettings).status
-        print '...'   
-        print xsettings
+        print('...')
+        print(JCParser("/tmp/JermConfig.dummy-conf.jconf",container=xsettings).status)
+        print('...')   
+        print(xsettings)
