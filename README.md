@@ -332,7 +332,6 @@ print "config file data: {}".format(data)
             
 _NB_:
 1. Windows and Mac users should install the library in their respective locations
-2. Linux users who dont want the hastle of manual installations should use the deb
-   package [here](https://github.com/glayn2bukman/JermConfig/releases/download/0.0.1/JermConfig-0.0.1-1.deb) or check the [releases](https://github.com/glayn2bukman/JermConfig/releases) for this repo
+2. Linux users who dont want the hastle of manual installations should check the [releases](https://github.com/glayn2bukman/JermConfig/releases) for this repo
 
 for more info or questions, please send me an email at **glayn2bukman@gmail.com**
